@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "74969565784",
+    "project_id": "superb-gear-315017",
+    "storage_bucket": "superb-gear-315017.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:74969565784:android:1fcfef9e1a6a6cec30182d",
+        "android_client_info": {
+          "package_name": "com.example.skype_clone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "74969565784-qqsrb43h0rtvcmt9m27ef6cv1mo0kmj6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.skype_clone",
+            "certificate_hash": "17ad53d655f7936945fb4787c9c7cee6795b0094"
+          }
+        },
+        {
+          "client_id": "74969565784-d2qe2i7q7d19qfsek0jfoh7md7tr0525.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5d6vmfUXrrFsRh0S2dIRZRpO2x976pwA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "74969565784-d2qe2i7q7d19qfsek0jfoh7md7tr0525.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
