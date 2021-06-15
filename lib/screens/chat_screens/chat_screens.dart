@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:emoji_picker/emoji_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:skype_clone/constants/strings.dart';
 import 'package:skype_clone/model_class/message.dart';
 import 'package:skype_clone/model_class/user_model.dart';
@@ -24,7 +26,27 @@ class _ChatScreenState extends State<ChatScreen> {
   UserModel sender;
 
   TextEditingController _textEditingController = TextEditingController();
+  ScrollController _listScrollController = ScrollController();
+  FocusNode textFieldFocus = FocusNode();
+
   bool isWriting = false;
+  bool showEmojiPicker = false;
+
+  showKeyboard() => textFieldFocus.requestFocus();
+
+  hideKeyboard() => textFieldFocus.unfocus();
+
+  showEmojiContainer() {
+    setState(() {
+      showEmojiPicker = true;
+    });
+  }
+
+  hideEmojiContainer() {
+    setState(() {
+      showEmojiPicker = false;
+    });
+  }
 
   @override
   void initState() {
@@ -48,26 +70,59 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Flexible(child: messageList()),
           chatControls(),
+          showEmojiPicker
+              ? Container(
+                  child: emojiContainer(),
+                )
+              : Container()
         ],
       ),
     );
   }
 
+  emojiContainer() {
+    return EmojiPicker(
+      bgColor: UniversalVariables.separatorColor,
+      indicatorColor: UniversalVariables.blueColor,
+      columns: 7,
+      rows: 3,
+      onEmojiSelected: (emoji, category) {
+        setState(() {
+          isWriting = true;
+        });
+        _textEditingController.text = _textEditingController.text + emoji.emoji;
+      },
+      recommendKeywords: ['happy', 'sad', 'face', 'party'],
+      numRecommended: 50,
+    );
+  }
+
 // Chat Body Start
+
   Widget messageList() {
     return StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection(Messages_Collection)
             .doc(currentUser)
             .collection(widget.receiver.uid)
-            .orderBy(TimeStamp_Field, descending: false)
+            .orderBy(TimeStamp_Field, descending: true)
             .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshots) {
-          if(snapshots.data==null){
+          if (snapshots.data == null) {
             return Center(child: CircularProgressIndicator());
           }
+
+          // SchedulerBinding.instance.addPostFrameCallback((_) {
+          //   _listScrollController.animateTo(
+          //       _listScrollController.position.minScrollExtent,   //minScrollExtent = it will force to go down
+          //       duration: Duration(milliseconds: 250),
+          //       curve: Curves.easeInOut);
+          // });
+
           return ListView.builder(
+              controller: _listScrollController,
               padding: EdgeInsets.all(10),
+              reverse: true,
               itemCount: snapshots.data.docs.length,
               itemBuilder: (context, index) {
                 return chatMessageItem(snapshots.data.docs[index]);
@@ -82,9 +137,12 @@ class _ChatScreenState extends State<ChatScreen> {
       margin: EdgeInsets.symmetric(vertical: 15), //distance between messages
       child: Container(
         child: Align(
-            alignment: _message.senderId == currentUser ? Alignment.centerRight : Alignment.centerLeft,
-            child: _message.senderId == currentUser ? senderLayout(_message) : receiverLayout(_message)
-        ),
+            alignment: _message.senderId == currentUser
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
+            child: _message.senderId == currentUser
+                ? senderLayout(_message)
+                : receiverLayout(_message)),
       ),
     );
   }
@@ -179,27 +237,42 @@ class _ChatScreenState extends State<ChatScreen> {
             width: 5,
           ),
           Expanded(
-              child: TextField(
-            controller: _textEditingController,
-            style: TextStyle(color: Colors.white),
-            onChanged: (value) {
-              (value.length > 0 && value.trim() != "")
-                  ? setWritingTo(true)
-                  : setWritingTo(false);
-            },
-            decoration: InputDecoration(
-                hintText: 'Type a message',
-                hintStyle: TextStyle(color: UniversalVariables.greyColor),
-                contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                filled: true,
-                fillColor: UniversalVariables.separatorColor,
-                suffixIcon:
-                    GestureDetector(onTap: () {}, child: Icon(Icons.face)),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50),
-                  borderSide: BorderSide.none,
-                )),
-          )),
+              child: Stack(alignment: Alignment.centerRight, children: [
+            TextField(
+              onTap: hideEmojiContainer,
+              controller: _textEditingController,
+              focusNode: textFieldFocus,
+              style: TextStyle(color: Colors.white),
+              onChanged: (value) {
+                (value.length > 0 && value.trim() != "")
+                    ? setWritingTo(true)
+                    : setWritingTo(false);
+              },
+              decoration: InputDecoration(
+                  hintText: 'Type a message',
+                  hintStyle: TextStyle(color: UniversalVariables.greyColor),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                  filled: true,
+                  fillColor: UniversalVariables.separatorColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    borderSide: BorderSide.none,
+                  )),
+            ),
+            IconButton(
+                onPressed: () {
+                  if (!showEmojiPicker) {
+                    //showing emoji container and hiding keyboard after pressing emoji button
+                    showEmojiContainer();
+                    hideKeyboard();
+                  } else {
+                    //otherwise keyboard will show
+                    hideEmojiContainer();
+                    showKeyboard();
+                  }
+                },
+                icon: Icon(Icons.face)),
+          ])),
           isWriting
               ? Container()
               : Padding(
@@ -218,7 +291,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         Icons.send,
                         size: 15,
                       ),
-                      onPressed: () => sendMessage()))
+                      onPressed: () => sendMessage()
+                  ))
               : Container()
         ],
       ),
@@ -239,9 +313,17 @@ class _ChatScreenState extends State<ChatScreen> {
       isWriting = false; //to make invisible the send button after pressing it
     });
 
-    _textEditingController.text = "";
+    _textEditingController.text =
+        ""; //clearing box text after sending the message
 
-    _repository.addMessageToDB(_message, sender, widget.receiver); //clearing box text after sending the message
+    _repository.addMessageToDB(_message, sender, widget.receiver);
+
+    //hiding keyboard and emoji container after pressing send Button
+    if(showEmojiPicker){
+      hideEmojiContainer();
+    }
+    hideKeyboard();
+    //hiding keyboard and emoji container after pressing send Button
   }
 
   addMediaModal(BuildContext context) {
