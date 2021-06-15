@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:skype_clone/constants/strings.dart';
 import 'package:skype_clone/model_class/message.dart';
 import 'package:skype_clone/model_class/user_model.dart';
 import 'package:skype_clone/resource/firebase_repository.dart';
@@ -32,8 +33,6 @@ class _ChatScreenState extends State<ChatScreen> {
     _repository.getCurrentUser().then((UserModel user) {
       setState(() {
         currentUser = user.uid;
-        print('microphone testing: ${currentUser.toString()}');
-        print('microphone testing: ${widget.receiver.uid.toString()}');
         sender =
             UserModel(uid: user.uid, name: user.name, photoUrl: user.photoUrl);
       });
@@ -58,10 +57,10 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget messageList() {
     return StreamBuilder(
         stream: FirebaseFirestore.instance
-            .collection('messages')
+            .collection(Messages_Collection)
             .doc(currentUser)
             .collection(widget.receiver.uid)
-            .orderBy('timeStamp', descending: false)
+            .orderBy(TimeStamp_Field, descending: false)
             .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshots) {
           if(snapshots.data==null){
@@ -77,18 +76,20 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget chatMessageItem(DocumentSnapshot snapshot) {
+    Message _message = Message.fromMap(snapshot.data());
+
     return Container(
       margin: EdgeInsets.symmetric(vertical: 15), //distance between messages
       child: Container(
         child: Align(
-            alignment: snapshot['senderId'] == currentUser ? Alignment.centerRight : Alignment.centerLeft,
-            child: snapshot['senderId'] == currentUser ? senderLayout(snapshot) : receiverLayout(snapshot)
+            alignment: _message.senderId == currentUser ? Alignment.centerRight : Alignment.centerLeft,
+            child: _message.senderId == currentUser ? senderLayout(_message) : receiverLayout(_message)
         ),
       ),
     );
   }
 
-  Widget senderLayout(DocumentSnapshot snapshot) {
+  Widget senderLayout(Message message) {
     Radius messageRadius = Radius.circular(10);
 
     return Container(
@@ -107,18 +108,18 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       child: Padding(
           padding: EdgeInsets.all(10), //padding or space around text messages
-          child: getMessage(snapshot)),
+          child: getMessage(message)),
     );
   }
 
-  Widget getMessage(DocumentSnapshot snapshot) {
+  Widget getMessage(Message message) {
     return Text(
-      snapshot['message'],
+      message.message,
       style: TextStyle(color: Colors.white, fontSize: 16),
     );
   }
 
-  Widget receiverLayout(DocumentSnapshot snapshot) {
+  Widget receiverLayout(Message message) {
     Radius messageRadius = Radius.circular(10);
 
     return Container(
@@ -134,7 +135,7 @@ class _ChatScreenState extends State<ChatScreen> {
             bottomLeft: messageRadius,
             bottomRight: messageRadius,
           )),
-      child: Padding(padding: EdgeInsets.all(10), child: getMessage(snapshot)),
+      child: Padding(padding: EdgeInsets.all(10), child: getMessage(message)),
     );
   }
 
@@ -232,15 +233,15 @@ class _ChatScreenState extends State<ChatScreen> {
         receiverId: widget.receiver.uid,
         type: 'text',
         message: text,
-        timeStamp: FieldValue.serverTimestamp());
+        timeStamp: Timestamp.now());
 
     setState(() {
       isWriting = false; //to make invisible the send button after pressing it
     });
 
-    _repository.addMessageToDB(_message, sender, widget.receiver).whenComplete(
-        () => _textEditingController
-            .clear()); //clearing box text after sending the message
+    _textEditingController.text = "";
+
+    _repository.addMessageToDB(_message, sender, widget.receiver); //clearing box text after sending the message
   }
 
   addMediaModal(BuildContext context) {
