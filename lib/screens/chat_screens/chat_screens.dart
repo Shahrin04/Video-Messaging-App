@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emoji_picker/emoji_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:skype_clone/constants/strings.dart';
 import 'package:skype_clone/model_class/message.dart';
 import 'package:skype_clone/model_class/user_model.dart';
 import 'package:skype_clone/resource/firebase_repository.dart';
+import 'package:skype_clone/utils/Utils.dart';
 import 'package:skype_clone/utils/universal_variables.dart';
 import 'package:skype_clone/widgets/appBar.dart';
 import 'package:skype_clone/widgets/customTile.dart';
@@ -199,6 +203,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
 // Chat Body End
 
+  void pickImage({@required ImageSource source}) async {
+    File selectedImage = await Utils.pickImage(source: source);
+    _repository.uploadImage(
+        image: selectedImage,
+        receiverId: widget.receiver.uid,
+        senderId: currentUser);
+  }
+
   CustomAppBar customAppBar(BuildContext context) {
     return CustomAppBar(
         leading: IconButton(
@@ -278,7 +290,12 @@ class _ChatScreenState extends State<ChatScreen> {
               : Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10),
                   child: Icon(Icons.record_voice_over)),
-          isWriting ? Container() : Icon(Icons.camera_alt),
+          isWriting
+              ? Container()
+              : GestureDetector(
+                  child: Icon(Icons.camera_alt),
+                  onTap: () => pickImage(source: ImageSource.camera),
+                ),
           isWriting
               ? Container(
                   margin: EdgeInsets.only(left: 10),
@@ -291,8 +308,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         Icons.send,
                         size: 15,
                       ),
-                      onPressed: () => sendMessage()
-                  ))
+                      onPressed: () => sendMessage()))
               : Container()
         ],
       ),
@@ -319,7 +335,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _repository.addMessageToDB(_message, sender, widget.receiver);
 
     //hiding keyboard and emoji container after pressing send Button
-    if(showEmojiPicker){
+    if (showEmojiPicker) {
       hideEmojiContainer();
     }
     hideKeyboard();

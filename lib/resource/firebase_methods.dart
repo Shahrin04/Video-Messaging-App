@@ -1,15 +1,22 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:skype_clone/constants/strings.dart';
 import 'package:skype_clone/model_class/message.dart';
 import 'package:skype_clone/model_class/user_model.dart';
 import 'package:skype_clone/utils/Utils.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseMethod {
   static final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  Reference _storageReference;
 
   //create user object based on User Credential
   UserModel _userFromUserCredential(User user) {
@@ -81,7 +88,8 @@ class FirebaseMethod {
   Future<List<UserModel>> fetchAllUsers(UserModel currentUser) async {
     try {
       List<UserModel> userList = List<UserModel>();
-      QuerySnapshot snapshot = await fireStore.collection(Users_Collection).get();
+      QuerySnapshot snapshot =
+          await fireStore.collection(Users_Collection).get();
       for (var i = 0; i < snapshot.docs.length; i++) {
         if (snapshot.docs[i].id != currentUser.uid) {
           userList.add(UserModel.fromMap(snapshot.docs[i].data()));
@@ -136,4 +144,45 @@ class FirebaseMethod {
     _googleSignIn.signOut();
     _auth.signOut();
   }
+  //upload Image and sending Image
+  Future<String> uploadToStorage(File imageFile)async{
+    try{
+      _storageReference = FirebaseStorage.instance.ref().child('${DateTime.now().millisecondsSinceEpoch}');
+
+      UploadTask storageUploadTask =  _storageReference.putFile(imageFile);
+      var url = await storageUploadTask.then((image) => image.ref.getDownloadURL());
+      return url;
+    }catch(e){
+      print(e.toString());
+      return null;
+    }
+
+  }
+
+  void setImageMsg(String url, String receiverId, String senderId)async{
+    Message _message;
+
+    _message = Message.imageMessage(senderId, receiverId, 'image', 'IMAGE', Timestamp.now(), url);
+
+    var map = _message.toImageMap();
+
+    await fireStore
+        .collection(Messages_Collection)
+        .doc(_message.senderId)
+        .collection(_message.receiverId)
+        .add(map);
+    await fireStore
+        .collection(Messages_Collection)
+        .doc(_message.receiverId)
+        .collection(_message.senderId)
+        .add(map);
+  }
+
+  void uploadImage(File image, String receiverId, String senderId)async{
+    String url = await uploadToStorage(image);
+
+    setImageMsg(url, receiverId, senderId);
+  }
+
+  //upload Image and sending Image
 }
