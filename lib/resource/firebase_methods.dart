@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:skype_clone/constants/strings.dart';
 import 'package:skype_clone/model_class/message.dart';
 import 'package:skype_clone/model_class/user_model.dart';
+import 'package:skype_clone/provider/image_upload_provider.dart';
 import 'package:skype_clone/utils/Utils.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
@@ -178,8 +179,12 @@ class FirebaseMethod {
         .add(map);
   }
 
-  void uploadImage(File image, String receiverId, String senderId)async{
+  void uploadImage(File image, String receiverId, String senderId, ImageUploadProvider imageUploadProvider)async{
+    imageUploadProvider.setToLoading();
+
     String url = await uploadToStorage(image);
+
+    imageUploadProvider.setToIdle();
 
     setImageMsg(url, receiverId, senderId);
   }

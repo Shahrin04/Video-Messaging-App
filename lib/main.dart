@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:skype_clone/model_class/user_model.dart';
+import 'package:skype_clone/provider/image_upload_provider.dart';
 import 'package:skype_clone/resource/firebase_methods.dart';
 import 'package:skype_clone/screens/chat_screens/chat_screens.dart';
 import 'package:skype_clone/screens/wrapper.dart';
@@ -19,17 +20,20 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamProvider<UserModel>.value(
       value: FirebaseMethod().user,
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
-        initialRoute: '/',
-        routes: {
-          '/search_screen': (context) => SearchScreen(),
-        },
-        theme: ThemeData(
-          brightness: Brightness.dark
+      child: ChangeNotifierProvider<ImageUploadProvider>(
+        create: (context) => ImageUploadProvider(),
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Flutter Demo',
+          initialRoute: '/',
+          routes: {
+            '/search_screen': (context) => SearchScreen(),
+          },
+          theme: ThemeData(
+            brightness: Brightness.dark
+          ),
+          home: Wrapper(),
         ),
-        home: Wrapper(),
       ),
     );
   }

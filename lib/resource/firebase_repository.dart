@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:skype_clone/model_class/message.dart';
 import 'package:skype_clone/model_class/user_model.dart';
+import 'package:skype_clone/provider/image_upload_provider.dart';
 import 'package:skype_clone/resource/firebase_methods.dart';
 
 class FirebaseRepository {
@@ -32,7 +33,8 @@ class FirebaseRepository {
   void uploadImage(
           {@required File image,
           @required String receiverId,
-          @required String senderId}) =>
-      _firebaseMethod.uploadImage(image, receiverId, senderId);
-
+          @required String senderId,
+          @required ImageUploadProvider imageUploadProvider}) =>
+      _firebaseMethod.uploadImage(
+          image, receiverId, senderId, imageUploadProvider);
 }

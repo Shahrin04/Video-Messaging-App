@@ -5,10 +5,14 @@ import 'package:emoji_picker/emoji_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:skype_clone/constants/strings.dart';
+import 'package:skype_clone/enum/view_state.dart';
 import 'package:skype_clone/model_class/message.dart';
 import 'package:skype_clone/model_class/user_model.dart';
+import 'package:skype_clone/provider/image_upload_provider.dart';
 import 'package:skype_clone/resource/firebase_repository.dart';
+import 'package:skype_clone/screens/chat_screens/widget/cached_image.dart';
 import 'package:skype_clone/utils/Utils.dart';
 import 'package:skype_clone/utils/universal_variables.dart';
 import 'package:skype_clone/widgets/appBar.dart';
@@ -24,6 +28,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  ImageUploadProvider _imageUploadProvider;
   FirebaseRepository _repository = FirebaseRepository();
 
   String currentUser;
@@ -67,12 +72,19 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _imageUploadProvider = Provider.of<ImageUploadProvider>(context);
     return Scaffold(
       backgroundColor: UniversalVariables.blackColor,
       appBar: customAppBar(context),
       body: Column(
         children: [
           Flexible(child: messageList()),
+          _imageUploadProvider.getViewState == ViewState.LOADING
+              ? Container(
+                  alignment: Alignment.centerRight,
+                  margin: EdgeInsets.only(right: 15),
+                  child: CircularProgressIndicator())
+              : Container(),
           chatControls(),
           showEmojiPicker
               ? Container(
@@ -175,10 +187,16 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget getMessage(Message message) {
-    return Text(
-      message.message,
-      style: TextStyle(color: Colors.white, fontSize: 16),
-    );
+    return message.type != Message_Type_Image
+        ? Text(
+            message.message,
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          )
+        : message.photoUrl != null
+            ? CachedImage(
+                url: message.photoUrl,
+              )
+            : Text('Image is rendering...');
   }
 
   Widget receiverLayout(Message message) {
@@ -208,7 +226,8 @@ class _ChatScreenState extends State<ChatScreen> {
     _repository.uploadImage(
         image: selectedImage,
         receiverId: widget.receiver.uid,
-        senderId: currentUser);
+        senderId: currentUser,
+        imageUploadProvider: _imageUploadProvider);
   }
 
   CustomAppBar customAppBar(BuildContext context) {
@@ -374,13 +393,30 @@ class _ChatScreenState extends State<ChatScreen> {
               Flexible(
                   child: ListView(
                 children: [
-                  ModalTile('Media', 'Share Photo and Video', Icons.image),
-                  ModalTile('File', 'Share Files', Icons.tab),
-                  ModalTile('Contact', 'Share Contacts', Icons.contacts),
-                  ModalTile('Location', 'Share a Location', Icons.add_location),
-                  ModalTile('Schedule Call',
-                      'Arrange a skype call and get reminders', Icons.schedule),
-                  ModalTile('Create Poll', 'Share polls', Icons.poll),
+                  ModalTile(
+                      title: 'Media',
+                      subTitle: 'Share Photo and Video',
+                      icon: Icons.image,
+                    onTap: ()=> pickImage(source: ImageSource.gallery),
+                  ),
+                  ModalTile(
+                      title: 'File', subTitle: 'Share Files', icon: Icons.tab),
+                  ModalTile(
+                      title: 'Contact',
+                      subTitle: 'Share Contacts',
+                      icon: Icons.contacts),
+                  ModalTile(
+                      title: 'Location',
+                      subTitle: 'Share a Location',
+                      icon: Icons.add_location),
+                  ModalTile(
+                      title: 'Schedule Call',
+                      subTitle: 'Arrange a skype call and get reminders',
+                      icon: Icons.schedule),
+                  ModalTile(
+                      title: 'Create Poll',
+                      subTitle: 'Share polls',
+                      icon: Icons.poll),
                 ],
               )),
             ],
@@ -393,8 +429,13 @@ class ModalTile extends StatelessWidget {
   final String title;
   final String subTitle;
   final IconData icon;
+  final Function onTap;
 
-  ModalTile(this.title, this.subTitle, this.icon);
+  ModalTile(
+      {@required this.title,
+      @required this.subTitle,
+      @required this.icon,
+      this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -403,6 +444,7 @@ class ModalTile extends StatelessWidget {
         horizontal: 15,
       ),
       child: CustomTile(
+          onTap: onTap,
           mini: false,
           leading: Container(
             margin: EdgeInsets.only(right: 10),

@@ -25,7 +25,7 @@ class Utils {
         maxWidth: 500,
         maxHeight: 500,
         preferredCameraDevice: CameraDevice.rear);
-    File selectedImage = File('img_${file.path}.jpg');
+    File selectedImage = File(file.path);
     return selectedImage;
   }
 
