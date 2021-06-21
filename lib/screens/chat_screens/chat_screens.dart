@@ -12,8 +12,10 @@ import 'package:skype_clone/model_class/message.dart';
 import 'package:skype_clone/model_class/user_model.dart';
 import 'package:skype_clone/provider/image_upload_provider.dart';
 import 'package:skype_clone/resource/firebase_repository.dart';
+import 'package:skype_clone/screens/call_screen/call_screen.dart';
 import 'package:skype_clone/screens/chat_screens/widget/cached_image.dart';
 import 'package:skype_clone/utils/Utils.dart';
+import 'package:skype_clone/utils/call_utilities.dart';
 import 'package:skype_clone/utils/universal_variables.dart';
 import 'package:skype_clone/widgets/appBar.dart';
 import 'package:skype_clone/widgets/customTile.dart';
@@ -237,7 +239,9 @@ class _ChatScreenState extends State<ChatScreen> {
             onPressed: () => Navigator.pop(context)),
         title: Text(widget.receiver.name),
         actions: [
-          IconButton(icon: Icon(Icons.video_call), onPressed: () {}),
+          IconButton(icon: Icon(Icons.video_call), onPressed: () {
+            CallUtils.dial(from: sender, to: widget.receiver, context: context);
+          }),
           IconButton(icon: Icon(Icons.phone), onPressed: () {}),
         ],
         centerTitle: false);

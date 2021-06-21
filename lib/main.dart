@@ -18,22 +18,21 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return StreamProvider<UserModel>.value(
-      value: FirebaseMethod().user,
-      child: ChangeNotifierProvider<ImageUploadProvider>(
-        create: (context) => ImageUploadProvider(),
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Flutter Demo',
-          initialRoute: '/',
-          routes: {
-            '/search_screen': (context) => SearchScreen(),
-          },
-          theme: ThemeData(
-            brightness: Brightness.dark
-          ),
-          home: Wrapper(),
-        ),
+    return MultiProvider(
+      providers: [
+        StreamProvider<UserModel>.value(value: FirebaseMethod().user),
+        ChangeNotifierProvider<ImageUploadProvider>(
+            create: (_) => ImageUploadProvider())
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        initialRoute: '/',
+        routes: {
+          '/search_screen': (context) => SearchScreen(),
+        },
+        theme: ThemeData(brightness: Brightness.dark),
+        home: Wrapper(),
       ),
     );
   }
