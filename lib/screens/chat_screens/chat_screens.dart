@@ -196,7 +196,11 @@ class _ChatScreenState extends State<ChatScreen> {
           )
         : message.photoUrl != null
             ? CachedImage(
-                url: message.photoUrl,
+                message.photoUrl,
+                height: 250,
+                width: 250,
+                boxFit: BoxFit.cover,
+                radius: 10,
               )
             : Text('Image is rendering...');
   }
@@ -239,9 +243,12 @@ class _ChatScreenState extends State<ChatScreen> {
             onPressed: () => Navigator.pop(context)),
         title: Text(widget.receiver.name),
         actions: [
-          IconButton(icon: Icon(Icons.video_call), onPressed: () {
-            CallUtils.dial(from: sender, to: widget.receiver, context: context);
-          }),
+          IconButton(
+              icon: Icon(Icons.video_call),
+              onPressed: () {
+                CallUtils.dial(
+                    from: sender, to: widget.receiver, context: context);
+              }),
           IconButton(icon: Icon(Icons.phone), onPressed: () {}),
         ],
         centerTitle: false);
@@ -398,10 +405,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: ListView(
                 children: [
                   ModalTile(
-                      title: 'Media',
-                      subTitle: 'Share Photo and Video',
-                      icon: Icons.image,
-                    onTap: ()=> pickImage(source: ImageSource.gallery),
+                    title: 'Media',
+                    subTitle: 'Share Photo and Video',
+                    icon: Icons.image,
+                    onTap: () => pickImage(source: ImageSource.gallery),
                   ),
                   ModalTile(
                       title: 'File', subTitle: 'Share Files', icon: Icons.tab),
