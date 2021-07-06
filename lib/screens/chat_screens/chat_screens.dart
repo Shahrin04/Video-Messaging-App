@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:skype_clone/config/permissions.dart';
 import 'package:skype_clone/constants/strings.dart';
 import 'package:skype_clone/enum/view_state.dart';
 import 'package:skype_clone/model_class/message.dart';
@@ -245,10 +246,11 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: [
           IconButton(
               icon: Icon(Icons.video_call),
-              onPressed: () {
-                CallUtils.dial(
-                    from: sender, to: widget.receiver, context: context);
-              }),
+              onPressed: () async =>
+                  await Permissions.cameraAndMicrophonePermissionsGranted()
+                      ? CallUtils.dial(
+                          from: sender, to: widget.receiver, context: context)
+                      : {}),
           IconButton(icon: Icon(Icons.phone), onPressed: () {}),
         ],
         centerTitle: false);

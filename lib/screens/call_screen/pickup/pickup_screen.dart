@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skype_clone/config/permissions.dart';
 import 'package:skype_clone/model_class/call.dart';
 import 'package:skype_clone/resource/call_method.dart';
 import 'package:skype_clone/screens/call_screen/call_screen.dart';
@@ -58,8 +59,13 @@ class PickUpScreen extends StatelessWidget {
                       Icons.call,
                       color: Colors.green,
                     ),
-                    onPressed: () async => Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => CallScreen()))),
+                    onPressed: () async => await Permissions
+                            .cameraAndMicrophonePermissionsGranted()
+                        ? Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => CallScreen()))
+                        : {}),
               ],
             ),
           ],
