@@ -3,7 +3,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
+import 'package:skype_clone/enum/user_state.dart';
+import 'package:skype_clone/model_class/user_model.dart';
 import 'package:skype_clone/provider/user_provider.dart';
+import 'package:skype_clone/resource/firebase_repository.dart';
 import 'package:skype_clone/screens/call_screen/pickup/pickup_layout.dart';
 import 'package:skype_clone/screens/pages/chat_list_screen.dart';
 import 'package:skype_clone/utils/universal_variables.dart';
@@ -13,23 +16,66 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with WidgetsBindingObserver {
   double _titleFontSize = 10;
   int _page = 0;
   PageController pageController;
+
+  final FirebaseRepository _firebaseRepository = FirebaseRepository();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
     super.initState();
 
-    // SchedulerBinding.instance.addPostFrameCallback((_) {
-    //   UserProvider user = Provider.of<UserProvider>(context, listen: false);
-    //   user.refreshUser();
-    // });
-
-    setState(() {
-      pageController = PageController();
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      _firebaseRepository.setUserState(
+          uid: _auth.currentUser.uid, userState: UserState.online);
     });
+
+    WidgetsBinding.instance.addObserver(this);
+
+    pageController = PageController();
+
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final user = Provider.of<UserModel>(context);
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.detached:
+        user.uid != null
+            ? _firebaseRepository.setUserState(
+                uid: user.uid, userState: UserState.offline)
+            : print('detached state');
+        break;
+      case AppLifecycleState.inactive:
+        user.uid != null
+            ? _firebaseRepository.setUserState(
+                uid: user.uid, userState: UserState.offline)
+            : print('inactive state');
+        break;
+      case AppLifecycleState.paused:
+        user.uid != null
+            ? _firebaseRepository.setUserState(
+                uid: user.uid, userState: UserState.waiting)
+            : print('paused state');
+        break;
+      case AppLifecycleState.resumed:
+        user.uid != null
+            ? _firebaseRepository.setUserState(
+                uid: user.uid, userState: UserState.online)
+            : print('resumed state');
+        break;
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   void onPageChanged(int page) {

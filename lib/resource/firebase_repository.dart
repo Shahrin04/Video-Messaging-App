@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:skype_clone/enum/user_state.dart';
 import 'package:skype_clone/model_class/message.dart';
 import 'package:skype_clone/model_class/user_model.dart';
 import 'package:skype_clone/provider/image_upload_provider.dart';
@@ -13,6 +15,9 @@ class FirebaseRepository {
   //getting current user
   //Future<UserModel> getCurrentUser() => _firebaseMethod.getCurrentUser();
   Future<UserModel> getCurrentUser() => _firebaseMethod.getCurrentUser();
+
+  //getting all user by their id
+  Future<UserModel> getUserDetailsById(id) => _firebaseMethod.getUserDetailsById(id);
 
   //SignIn and create database in firestore
   Future signIn() => _firebaseMethod.signIn();
@@ -40,4 +45,16 @@ class FirebaseRepository {
           @required ImageUploadProvider imageUploadProvider}) =>
       _firebaseMethod.uploadImage(
           image, receiverId, senderId, imageUploadProvider);
+
+  //fetch contact list as Stream
+  Stream<QuerySnapshot> fetchContacts({String userId}) => _firebaseMethod.fetchContacts(userId: userId);
+
+  //fetch last message between sender and receiver
+  Stream<QuerySnapshot> fetchLastMessageBetween(
+      {String senderId, String receiverId}) => _firebaseMethod.fetchLastMessageBetween(senderId: senderId, receiverId: receiverId);
+
+  //set user state
+  void setUserState({@required String uid, @required UserState userState}) => _firebaseMethod.setUserState(uid: uid, userState: userState);
+
+  Stream<DocumentSnapshot> gerUserStream({@required String id}) => _firebaseMethod.gerUserStream(id: id);
 }

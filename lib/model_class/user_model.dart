@@ -6,8 +6,9 @@ class UserModel{
   String name;
   String photoUrl;
   String phoneNumber;
+  int state;
 
-  UserModel({this.uid, this.email, this.name, this.photoUrl, this.phoneNumber});
+  UserModel({this.uid, this.email, this.name, this.photoUrl, this.phoneNumber, this.state});
 
   Map toMap(UserModel userModel){
     var data = Map<String, dynamic>();
@@ -16,6 +17,7 @@ class UserModel{
     data['name'] = userModel.name;
     data['photoUrl'] = userModel.photoUrl;
     data['phoneNumber'] = userModel.phoneNumber;
+    data['state'] = userModel.state;
   }
 
   UserModel.fromMap(Map<String, dynamic> mapData){
@@ -24,5 +26,6 @@ class UserModel{
     this.name = mapData['name'];
     this.photoUrl = mapData['photoUrl'];
     this.phoneNumber = mapData['phoneNumber'];
+    this.state = mapData['state'];
   }
 }

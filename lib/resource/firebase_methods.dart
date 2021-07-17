@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:skype_clone/constants/strings.dart';
+import 'package:skype_clone/enum/user_state.dart';
+import 'package:skype_clone/model_class/contact.dart';
 import 'package:skype_clone/model_class/message.dart';
 import 'package:skype_clone/model_class/user_model.dart';
 import 'package:skype_clone/provider/image_upload_provider.dart';
@@ -38,12 +40,7 @@ class FirebaseMethod {
     return _auth.authStateChanges().map(_userFromUserCredential);
   }
 
-  //getting current user
-  // Future<User> getCurrentUser() async {
-  //   User user;
-  //   user = _auth.currentUser;
-  //   return user;
-  // }
+  ////////////// auth methods starts ///////////////////////
   Future<UserModel> getCurrentUser() async {
     User user;
     user = _auth.currentUser;
@@ -94,6 +91,13 @@ class FirebaseMethod {
     }
   }
 
+  //signOut
+  Future<void> signOut() async {
+    _googleSignIn.disconnect();
+    _googleSignIn.signOut();
+    _auth.signOut();
+  }
+
   //fetch all user
   Future<List<UserModel>> fetchAllUsers(UserModel currentUser) async {
     try {
@@ -111,23 +115,30 @@ class FirebaseMethod {
     }
   }
 
-  // Future<List<UserModel>> fetchAllUsers (UserModel currentUser) async {
-  //   try {
-  //     List<UserModel> userList = List<UserModel>();
-  //     QuerySnapshot querySnapshot = await fireStore.collection('users').get();
-  //
-  //     for (var i = 0; i < querySnapshot.docs.length; i++) {
-  //       if (querySnapshot.docs[i].id != currentUser.uid) {
-  //         userList.add(UserModel.fromMap(querySnapshot.docs[i].data()));
-  //       }
-  //     }
-  //     return userList;
-  //   } catch (e) {
-  //     print(e.toString());
-  //   }
-  // }
+  //set user state
+  void setUserState({@required String uid, @required UserState userState}) {
+    int stateNum = Utils.stateToNum(userState);
 
-  //Update Message to DB
+    fireStore.collection(Users_Collection).doc(uid).update({'state': stateNum});
+  }
+
+  Stream<DocumentSnapshot> gerUserStream({@required String id}) =>
+      fireStore.collection(Users_Collection).doc(id).snapshots();
+
+  ////////////// auth methods ends ///////////////////////
+
+  Future<UserModel> getUserDetailsById(id) async {
+    try {
+      DocumentSnapshot documentSnapshot =
+          await fireStore.collection(Users_Collection).doc(id).get();
+      return UserModel.fromMap(documentSnapshot.data());
+    } on Exception catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
+
+  /////////////chat Methods////////////////////////
   Future<void> addMessageToDB(
       Message message, UserModel sender, UserModel receiver) async {
     try {
@@ -138,6 +149,9 @@ class FirebaseMethod {
           .doc(message.senderId)
           .collection(message.receiverId)
           .add(map);
+
+      addToContacts(senderId: message.senderId, receiverId: message.receiverId);
+
       await fireStore
           .collection(Messages_Collection)
           .doc(message.receiverId)
@@ -148,27 +162,45 @@ class FirebaseMethod {
     }
   }
 
-  //signOut
-  Future<void> signOut() async {
-    _googleSignIn.disconnect();
-    _googleSignIn.signOut();
-    _auth.signOut();
+  DocumentReference getContactsDocument({String of, String forContact}) =>
+      fireStore
+          .collection(Users_Collection)
+          .doc(of)
+          .collection(Contacts_Collection)
+          .doc(forContact);
+
+  addToContacts({String senderId, String receiverId}) async {
+    Timestamp currentTime = Timestamp.now();
+
+    await addToSenderContacts(senderId, receiverId, currentTime);
+    await addToReceiverContacts(senderId, receiverId, currentTime);
   }
 
-  //upload Image and sending Image
-  Future<String> uploadToStorage(File imageFile) async {
-    try {
-      _storageReference = FirebaseStorage.instance
-          .ref()
-          .child('${DateTime.now().millisecondsSinceEpoch}');
+  Future<void> addToSenderContacts(
+      String senderId, String receiverId, currentTime) async {
+    DocumentSnapshot senderSnapShot =
+        await getContactsDocument(of: senderId, forContact: receiverId).get();
 
-      UploadTask storageUploadTask = _storageReference.putFile(imageFile);
-      var url =
-          await storageUploadTask.then((image) => image.ref.getDownloadURL());
-      return url;
-    } catch (e) {
-      print(e.toString());
-      return null;
+    if (!senderSnapShot.exists) {
+      //if contact not exist
+      Contact receiverContact = Contact(uid: receiverId, addedOn: currentTime);
+      var receiverMap = receiverContact.toMap(receiverContact);
+      await getContactsDocument(of: senderId, forContact: receiverId)
+          .set(receiverMap);
+    }
+  }
+
+  Future<void> addToReceiverContacts(
+      String senderId, String receiverId, currentTime) async {
+    DocumentSnapshot receiverSnapShot =
+        await getContactsDocument(of: receiverId, forContact: senderId).get();
+
+    if (!receiverSnapShot.exists) {
+      //if contact not exist
+      Contact senderContact = Contact(uid: senderId, addedOn: currentTime);
+      var senderMap = senderContact.toMap(senderContact);
+      await getContactsDocument(of: receiverId, forContact: senderId)
+          .set(senderMap);
     }
   }
 
@@ -190,6 +222,40 @@ class FirebaseMethod {
         .doc(_message.receiverId)
         .collection(_message.senderId)
         .add(map);
+  }
+
+  Stream<QuerySnapshot> fetchContacts({String userId}) => fireStore
+      .collection(Users_Collection)
+      .doc(userId)
+      .collection(Contacts_Collection)
+      .snapshots();
+
+  Stream<QuerySnapshot> fetchLastMessageBetween(
+          {String senderId, String receiverId}) =>
+      fireStore
+          .collection(Messages_Collection)
+          .doc(senderId)
+          .collection(receiverId)
+          .orderBy('timeStamp')
+          .snapshots();
+
+  /////////////chat Methods////////////////////////
+
+  //upload Image and sending Image
+  Future<String> uploadToStorage(File imageFile) async {
+    try {
+      _storageReference = FirebaseStorage.instance
+          .ref()
+          .child('${DateTime.now().millisecondsSinceEpoch}');
+
+      UploadTask storageUploadTask = _storageReference.putFile(imageFile);
+      var url =
+          await storageUploadTask.then((image) => image.ref.getDownloadURL());
+      return url;
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
   }
 
   void uploadImage(File image, String receiverId, String senderId,

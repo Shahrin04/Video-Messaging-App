@@ -1,5 +1,6 @@
 const String Messages_Collection = 'messages';
 const String Users_Collection = 'users';
+const String Contacts_Collection = 'contacts';
 const String Call_Collection = 'call';
 
 
