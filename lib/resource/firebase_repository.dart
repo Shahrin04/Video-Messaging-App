@@ -35,7 +35,7 @@ class FirebaseRepository {
       _firebaseMethod.addMessageToDB(message, sender, receiver);
 
   //SignOut
-  Future<void> signOut() => _firebaseMethod.signOut();
+  Future<bool> signOut() => _firebaseMethod.signOut();
 
   //upload Image
   void uploadImage(

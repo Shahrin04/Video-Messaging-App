@@ -42,6 +42,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final user = Provider.of<UserModel>(context);
+
     super.didChangeAppLifecycleState(state);
 
     switch (state) {
@@ -69,13 +70,14 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                 uid: user.uid, userState: UserState.online)
             : print('resumed state');
         break;
+
     }
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
   }
 
   void onPageChanged(int page) {

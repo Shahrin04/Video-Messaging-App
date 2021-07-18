@@ -7,7 +7,7 @@ class UserProvider with ChangeNotifier{
   UserModel get getUser => _user;
   FirebaseRepository _firebaseRepository = FirebaseRepository();
 
-  void refreshUser()async{
+  Future <void> refreshUser()async{
     UserModel userModel = await _firebaseRepository.getUserDetails();
     _user = userModel;
     notifyListeners();

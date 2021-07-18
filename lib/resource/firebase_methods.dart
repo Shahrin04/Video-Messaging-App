@@ -92,10 +92,16 @@ class FirebaseMethod {
   }
 
   //signOut
-  Future<void> signOut() async {
-    _googleSignIn.disconnect();
-    _googleSignIn.signOut();
-    _auth.signOut();
+  Future<bool> signOut() async {
+    try {
+      _googleSignIn.disconnect();
+      _googleSignIn.signOut();
+      _auth.signOut();
+      return true;
+    } on Exception catch (e) {
+      print(e.toString());
+      return false;
+    }
   }
 
   //fetch all user
