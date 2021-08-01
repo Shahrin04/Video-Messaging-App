@@ -7,8 +7,11 @@ import 'package:skype_clone/enum/user_state.dart';
 import 'package:skype_clone/model_class/user_model.dart';
 import 'package:skype_clone/provider/user_provider.dart';
 import 'package:skype_clone/resource/firebase_repository.dart';
+import 'package:skype_clone/resource/local_db/db/hive_methods.dart';
+import 'package:skype_clone/resource/local_db/repository/log_repository.dart';
 import 'package:skype_clone/screens/call_screen/pickup/pickup_layout.dart';
-import 'package:skype_clone/screens/pages/chat_list_screen.dart';
+import 'package:skype_clone/screens/pages/logs/log_screen.dart';
+import 'file:///C:/Users/shahrin/AndroidStudioProjects/skype_clone/lib/screens/pages/chats/chat_list_screen.dart';
 import 'package:skype_clone/utils/universal_variables.dart';
 
 class Home extends StatefulWidget {
@@ -29,8 +32,12 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
     super.initState();
 
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      var userId = _auth.currentUser.uid;
       _firebaseRepository.setUserState(
-          uid: _auth.currentUser.uid, userState: UserState.online);
+          uid: userId, userState: UserState.online);
+      //add logs to db
+      LogRepository.init(isHive: false, dbName: userId);
+
     });
 
     WidgetsBinding.instance.addObserver(this);
@@ -41,7 +48,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final user = Provider.of<UserModel>(context);
+    final user = Provider.of<UserModel>(context, listen: false);
 
     super.didChangeAppLifecycleState(state);
 
@@ -102,10 +109,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
               child: ChatListScreen(),
             ),
             Center(
-              child: Text(
-                'Call Logs',
-                style: TextStyle(color: Colors.white),
-              ),
+              child: LogScreen(),
             ),
             Center(
               child: Text(

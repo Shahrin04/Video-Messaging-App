@@ -9,7 +9,7 @@ import 'package:path/path.dart';
 class SqliteMethod implements LogInterface {
   Database _db;
 
-  String databaseName = 'LogDB';
+  String databaseName = '';
   String tableName = 'Call_Logs';
 
   //columns
@@ -32,6 +32,9 @@ class SqliteMethod implements LogInterface {
   }
 
   @override
+  openDb(String dbName) async => databaseName = dbName;
+
+  @override
   init() async {
     Directory dir = await getApplicationDocumentsDirectory();
     String path = join(dir.path, databaseName);
@@ -50,6 +53,7 @@ class SqliteMethod implements LogInterface {
   @override
   addLogs(Log log) async {
     var dbClient = await db;
+    print('This log has been added in sqlite db');
     await dbClient.insert(tableName, log.toMap(log));
   }
 
@@ -77,22 +81,23 @@ class SqliteMethod implements LogInterface {
 
       return logList;
     } on Exception catch (e) {
-      print(e.toString());
+      print('data read exception : ${e.toString()}');
       return null;
     }
   }
 
-  @override
   updateLogs(Log log) async {
     var dbClient = await db;
     await dbClient.update(tableName, log.toMap(log),
-        where: '$id = ?', whereArgs: [log.logId]);
+        where: '$id = ?', whereArgs: [log.logId + 1]);
   }
 
   @override
   deleteLogs(int logId) async {
     var dbClient = await db;
-    await dbClient.delete(tableName, where: '$id = ?', whereArgs: [logId]);
+    await dbClient.delete(tableName, where: '$id = ?', whereArgs: [
+      logId + 1
+    ]); //incoming value of logId could be 0 and table index starts from 1
   }
 
   @override

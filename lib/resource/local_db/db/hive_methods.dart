@@ -6,7 +6,10 @@ import 'package:skype_clone/model_class/log.dart';
 import 'package:skype_clone/resource/local_db/interface/log_interface.dart';
 
 class HiveMethods implements LogInterface {
-  String hiveBox = 'Call_Logs';
+  String hiveBox = '';
+
+  @override
+  openDb(String dbName) => hiveBox = dbName;
 
   @override
   init() async {
@@ -20,13 +23,14 @@ class HiveMethods implements LogInterface {
     var logMap = log.toMap(log);
 
     int idOfInput = await box.add(logMap);
+    print('log added with id ${idOfInput.toString()} in Hive db');
     //var idOfInput = await box.put('id', logMap);
     close();
 
     return idOfInput;
   }
 
-  @override
+
   updateLogs(int i ,Log log) async {
     var box = await Hive.openBox(hiveBox);
     var logMap = log.toMap(log);
@@ -37,16 +41,21 @@ class HiveMethods implements LogInterface {
 
   @override
   Future<List<Log>> getLogs() async {
-    var box = await Hive.openBox(hiveBox);
+    try {
+      var box = await Hive.openBox(hiveBox);
 
-    List<Log> logList = [];
-    for(int i; i<=box.length; i++){
-      var logMap = box.getAt(i);
-      //var logMap = box.get('id');
-      logList.add(Log.fromMap(logMap));
+      List<Log> logList = [];
+      for(int i = 0; i<box.length; i++){
+        var logMap = box.getAt(i);
+        //var logMap = box.get('id');
+        logList.add(Log.fromMap(logMap));
+      }
+
+      return logList;
+    } on Exception catch (e) {
+      print('data read exception : ${e.toString()}');
+      return null;
     }
-
-    return logList;
   }
 
   @override
@@ -58,6 +67,5 @@ class HiveMethods implements LogInterface {
 
   @override
   close() => Hive.close();
-
 
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:skype_clone/enum/user_state.dart';
+import 'package:intl/intl.dart';
 
 class Utils {
   static String getUserName(String email) {
@@ -66,5 +67,13 @@ class Utils {
       default:
         return UserState.waiting;
     }
+  }
+
+  static String formatDateString({String dateString}){
+    DateTime dateTime = DateTime.parse(dateString);
+    var formatter = DateFormat('dd/MM/yy');
+
+    return formatter.format(dateTime);
+
   }
 }

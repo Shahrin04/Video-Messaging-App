@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:skype_clone/model_class/user_model.dart';
-import 'package:skype_clone/screens/pages/widgets/user_detail_container.dart';
+import 'package:skype_clone/screens/pages/chats/widgets/user_detail_container.dart';
 import 'package:skype_clone/utils/universal_variables.dart';
 
 

@@ -12,6 +12,8 @@ import 'package:skype_clone/resource/call_method.dart';
 
 import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
 import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
+import 'package:skype_clone/screens/home_page.dart';
+import 'package:skype_clone/screens/wrapper.dart';
 
 // import 'package:skype_clone/config/agora_config.dart';
 // import 'package:agora_rtc_engine/agora_rtc_engine.dart';
@@ -406,6 +408,7 @@ class _CallScreenState extends State<CallScreen> {
   final _infoStrings = <String>[];
   bool muted = false;
   RtcEngine _engine;
+
   //////////////  Agora ///////////////////
 
   @override
@@ -415,21 +418,22 @@ class _CallScreenState extends State<CallScreen> {
     // initialize agora sdk
     initialize();
   }
+
   addPostFrameCallBack() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       UserModel user = Provider.of<UserModel>(context, listen: false);
 
       callStreamSubscription =
           _callMethod.callStream(uid: user.uid).listen((DocumentSnapshot ds) {
-            switch (ds.data()) {
-              case null:
-              //snapshot is null which means that call is hanged and documents are deleted
-                Navigator.pop(context);
-                break;
-              default:
-                break;
-            }
-          });
+        switch (ds.data()) {
+          case null:
+            //snapshot is null which means that call is hanged and documents are deleted
+            Navigator.pop(context);
+            break;
+          default:
+            break;
+        }
+      });
     });
   }
 
@@ -526,6 +530,8 @@ class _CallScreenState extends State<CallScreen> {
     );
   }
 
+
+
   /// Video layout wrapper
   Widget _viewRows() {
     final views = _getRenderViews();
@@ -533,32 +539,32 @@ class _CallScreenState extends State<CallScreen> {
       case 1:
         return Container(
             child: Column(
-              children: <Widget>[_videoView(views[0])],
-            ));
+          children: <Widget>[_videoView(views[0])],
+        ));
       case 2:
         return Container(
             child: Column(
-              children: <Widget>[
-                _expandedVideoRow([views[0]]),
-                _expandedVideoRow([views[1]])
-              ],
-            ));
+          children: <Widget>[
+            _expandedVideoRow([views[0]]),
+            _expandedVideoRow([views[1]])
+          ],
+        ));
       case 3:
         return Container(
             child: Column(
-              children: <Widget>[
-                _expandedVideoRow(views.sublist(0, 2)),
-                _expandedVideoRow(views.sublist(2, 3))
-              ],
-            ));
+          children: <Widget>[
+            _expandedVideoRow(views.sublist(0, 2)),
+            _expandedVideoRow(views.sublist(2, 3))
+          ],
+        ));
       case 4:
         return Container(
             child: Column(
-              children: <Widget>[
-                _expandedVideoRow(views.sublist(0, 2)),
-                _expandedVideoRow(views.sublist(2, 4))
-              ],
-            ));
+          children: <Widget>[
+            _expandedVideoRow(views.sublist(0, 2)),
+            _expandedVideoRow(views.sublist(2, 4))
+          ],
+        ));
       default:
     }
     return Container();
@@ -578,7 +584,8 @@ class _CallScreenState extends State<CallScreen> {
             itemCount: _infoStrings.length,
             itemBuilder: (BuildContext context, int index) {
               if (_infoStrings.isEmpty) {
-                return Text("null");  // return type can't be null, a widget was required
+                return Text(
+                    "null"); // return type can't be null, a widget was required
               }
               return Padding(
                 padding: const EdgeInsets.symmetric(
@@ -636,7 +643,9 @@ class _CallScreenState extends State<CallScreen> {
             padding: const EdgeInsets.all(12.0),
           ),
           RawMaterialButton(
-            onPressed: () => _callMethod.endCall(call: widget.call),
+            onPressed: () async {
+              await _callMethod.endCall(call: widget.call);
+            },
             child: Icon(
               Icons.call_end,
               color: Colors.white,
@@ -664,7 +673,6 @@ class _CallScreenState extends State<CallScreen> {
     );
   }
 
-
   void _onToggleMute() {
     setState(() {
       muted = !muted;
@@ -675,6 +683,7 @@ class _CallScreenState extends State<CallScreen> {
   void _onSwitchCamera() {
     _engine.switchCamera();
   }
+
   //////////////  Agora ///////////////////
 
   @override

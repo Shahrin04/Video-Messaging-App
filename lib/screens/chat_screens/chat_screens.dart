@@ -14,6 +14,7 @@ import 'package:skype_clone/model_class/user_model.dart';
 import 'package:skype_clone/provider/image_upload_provider.dart';
 import 'package:skype_clone/resource/firebase_repository.dart';
 import 'package:skype_clone/screens/call_screen/call_screen.dart';
+import 'package:skype_clone/screens/call_screen/pickup/pickup_layout.dart';
 import 'package:skype_clone/screens/chat_screens/widget/cached_image.dart';
 import 'package:skype_clone/utils/Utils.dart';
 import 'package:skype_clone/utils/call_utilities.dart';
@@ -76,25 +77,27 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     _imageUploadProvider = Provider.of<ImageUploadProvider>(context);
-    return Scaffold(
-      backgroundColor: UniversalVariables.blackColor,
-      appBar: customAppBar(context),
-      body: Column(
-        children: [
-          Flexible(child: messageList()),
-          _imageUploadProvider.getViewState == ViewState.LOADING
-              ? Container(
-                  alignment: Alignment.centerRight,
-                  margin: EdgeInsets.only(right: 15),
-                  child: CircularProgressIndicator())
-              : Container(),
-          chatControls(),
-          showEmojiPicker
-              ? Container(
-                  child: emojiContainer(),
-                )
-              : Container()
-        ],
+    return PickupLayout(
+      scaffold: Scaffold(
+        backgroundColor: UniversalVariables.blackColor,
+        appBar: customAppBar(context),
+        body: Column(
+          children: [
+            Flexible(child: messageList()),
+            _imageUploadProvider.getViewState == ViewState.LOADING
+                ? Container(
+                    alignment: Alignment.centerRight,
+                    margin: EdgeInsets.only(right: 15),
+                    child: CircularProgressIndicator())
+                : Container(),
+            chatControls(),
+            showEmojiPicker
+                ? Container(
+                    child: emojiContainer(),
+                  )
+                : Container()
+          ],
+        ),
       ),
     );
   }

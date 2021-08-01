@@ -6,8 +6,8 @@ import 'package:skype_clone/model_class/user_model.dart';
 import 'package:skype_clone/resource/firebase_repository.dart';
 import 'package:skype_clone/screens/chat_screens/chat_screens.dart';
 import 'package:skype_clone/screens/chat_screens/widget/cached_image.dart';
-import 'package:skype_clone/screens/pages/widgets/dot_color_indicator.dart';
-import 'package:skype_clone/screens/pages/widgets/last_messgae_container.dart';
+import 'package:skype_clone/screens/pages/chats/widgets/dot_color_indicator.dart';
+import 'package:skype_clone/screens/pages/chats/widgets/last_messgae_container.dart';
 import 'package:skype_clone/utils/universal_variables.dart';
 import 'package:skype_clone/widgets/customTile.dart';
 

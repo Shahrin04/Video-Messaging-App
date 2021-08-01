@@ -5,7 +5,7 @@ import 'package:skype_clone/enum/user_state.dart';
 import 'package:skype_clone/model_class/user_model.dart';
 import 'package:skype_clone/resource/firebase_repository.dart';
 import 'package:skype_clone/screens/chat_screens/widget/cached_image.dart';
-import 'package:skype_clone/screens/pages/widgets/shimmering_logo.dart';
+import 'package:skype_clone/screens/pages/chats/widgets/shimmering_logo.dart';
 import 'package:skype_clone/screens/wrapper.dart';
 import 'package:skype_clone/widgets/appBar.dart';
 

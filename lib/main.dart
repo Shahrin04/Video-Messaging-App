@@ -6,6 +6,7 @@ import 'package:skype_clone/provider/image_upload_provider.dart';
 import 'package:skype_clone/provider/user_provider.dart';
 import 'package:skype_clone/resource/firebase_methods.dart';
 import 'package:skype_clone/screens/chat_screens/chat_screens.dart';
+import 'package:skype_clone/screens/home_page.dart';
 import 'package:skype_clone/screens/wrapper.dart';
 import 'package:skype_clone/screens/search_screen.dart';
 
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/search_screen': (context) => SearchScreen(),
+          '/wrapper': (context) => Wrapper(),
         },
         theme: ThemeData(brightness: Brightness.dark),
         home: Wrapper(),

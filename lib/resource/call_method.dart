@@ -7,8 +7,8 @@ class CallMethod {
   final CollectionReference callReference =
       FirebaseFirestore.instance.collection(Call_Collection);
 
-  Stream<DocumentSnapshot> callStream({String uid}) => callReference.doc(uid).snapshots();
-
+  Stream<DocumentSnapshot> callStream({String uid}) =>
+      callReference.doc(uid).snapshots();
 
   Future<bool> makeCall({Call call}) async {
     try {
@@ -30,8 +30,8 @@ class CallMethod {
 
   Future<bool> endCall({Call call}) async {
     try {
-      await callReference.doc(call.callerId).delete();
       await callReference.doc(call.receiverId).delete();
+      await callReference.doc(call.callerId).delete();
 
       return true;
     } catch (e) {
